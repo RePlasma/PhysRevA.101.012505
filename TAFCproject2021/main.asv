@@ -1,0 +1,111 @@
+%% add some description
+addpath 'qed'
+addpath 'W3'
+
+% setup
+w0 = 1.88e15; %[fs-1]
+a0 = 20; %[]
+dt = 0.01; %[w0^-1]
+tsig = 3;
+tmax = 3*pi*tsig;
+tdim = floor(tmax/dt);
+nparts = 100;
+
+% initial velocity distribution
+g0 = 3000;
+u0 = sqrt(g0^2-1);
+thetax=[]; thetay=[];
+
+% sample from independent electrons
+for i=1:nparts
+    % evolve
+    [thetax1, thetay1] = evolve(u0,a0,tsig,0,dt,tdim);
+    thetax = [thetax thetax1(thetax1~=-1)'];
+    thetay = [thetay thetay1(thetay1~=-1)'];
+end
+% number of emitted photons per electron
+%numel(thetax)/nparts;
+% rescale angles
+thetax = thetax*g0;
+thetay = thetay*g0;
+% swap (LP)
+thetaz = thetax;
+thetax = thetay;
+thetay = thetay
+
+%{
+%% no beaming
+plot(thetax,thetay,'.k') % scatter
+% style
+pbaspect([1 1 1])
+fnt = 22;
+ax = gca;
+ax.Box = 'on';
+ax.BoxStyle = 'full';
+ax.FontSize = fnt;
+ax.TickLabelInterpreter = 'latex';
+xlabel('$r_x$','FontSize', fnt, 'Interpreter','latex')
+ylabel('$r_y$','FontSize', fnt, 'Interpreter','latex')
+title('Collinear emission','FontSize', fnt, 'Interpreter','latex')
+xlim([-22,+22])
+ylim([-22,+22])
+%}
+
+%% finite beaming
+% edges
+nbins = 140;
+edgesx = linspace(min(thetax),max(thetax),nbins);
+edgesy = linspace(min(thetay),max(thetay),nbins);
+% plot histogram2d
+histogram2(thetax,thetay,edgesx,edgesy,'DisplayStyle','tile','ShowEmptyBins','off')
+colormap(flipud(spring))
+view(0,90)
+% style
+pbaspect([1 1 1])
+fnt = 22;
+ax = gca;
+ax.Box = 'on';
+ax.BoxStyle = 'full';
+ax.FontSize = fnt;
+ax.TickLabelInterpreter = 'latex';
+xlabel('$r_x$','FontSize', fnt, 'Interpreter','latex')
+ylabel('$r_y$','FontSize', fnt, 'Interpreter','latex')
+title('Finite beaming','FontSize', fnt, 'Interpreter','latex')
+xlim([-22,+22])
+ylim([-22,+22])
+return
+%% outline rx=0
+thetax0 = max(thetax)/100;
+[histN,histedges] = histcounts(thetay(abs(thetax) < thetax0),40);
+[thetaysmpl,dNdg] = histline(histedges, histN);
+plot(thetaysmpl,dNdg)
+% style
+pbaspect([3.2400 1 1])
+fnt = 22;
+ax = gca;
+ax.Box = 'on';
+ax.BoxStyle = 'full';
+ax.FontSize = fnt;
+ax.TickLabelInterpreter = 'latex';
+xlabel('$r_y$','FontSize', fnt, 'Interpreter','latex')
+ylabel('$dN_\gamma/dr_y$','FontSize', fnt, 'Interpreter','latex')
+title('CP $r_x=0$','FontSize', fnt, 'Interpreter','latex')
+xlim([-22,+22])
+return
+%% outline ry=0
+thetay0 = max(thetay)/100;
+[histN,histedges] = histcounts(thetax(abs(thetay) < thetay0),40);
+[thetaxsmpl,dNdg] = histline(histedges, histN);
+plot(thetaxsmpl,dNdg)
+% style
+pbaspect([3.2400 1 1])
+fnt = 22;
+ax = gca;
+ax.Box = 'on';
+ax.BoxStyle = 'full';
+ax.FontSize = fnt;
+ax.TickLabelInterpreter = 'latex';
+xlabel('$r_x$','FontSize', fnt, 'Interpreter','latex')
+ylabel('$dN_\gamma/dr_x$','FontSize', fnt, 'Interpreter','latex')
+title('CP $r_y=0$','FontSize', fnt, 'Interpreter','latex')
+xlim([-22,+22])
